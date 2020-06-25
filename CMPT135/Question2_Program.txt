@@ -1,0 +1,326 @@
+// READ BEFORE YOU START:
+// You are given a partially-completed program that creates a list of students.
+// Each student has the corresponding information: name, standard, and result.
+// Students on the list can have 2 different results : either pass or fail.
+// The classes Pass and Fail are subclasses of the Student class (found in Student.h).
+// Both of these classes will have their own use of the virtual display method.
+//
+// To begin, you should trace through the given code and understand how it works.
+// Please read the instructions above each required function and follow the directions carefully.
+// If you modify any of the given code, the return types, or the parameters, you risk failing the automated test cases.
+//
+// You are to assume that all input is valid:
+// Valid name:   String containing alphabetical letters beginning with a capital letter
+// Valid standard: String containing alphabetical letters beginning with a number
+// All input will be a valid length and no more than the allowed amount of memory will be used
+
+
+HW2_2.CPP 
+#include "Contain.h"
+#include "Student.h"
+#include "Pass.h"
+#include "Fail.h"
+#include <iostream>
+#include <fstream>
+#include <string>
+using namespace std;
+// forward declarations (prototypes)
+void branching(char);
+void registration(char);
+void add_student(string, string, bool);
+Student* search_student(string, string, bool);
+void remove_student(string, string, bool);
+void remove_all();
+void print_all();
+void save(string); 
+void load(string); 
+Contain* list = NULL; 
+int main()
+{
+   load("Students.txt");
+   char ch = 'i';
+   do {
+       cout << "Please enter your selection" << endl;
+       cout << "\ta: add a new student to the list" << endl;
+       cout << "\tc: change the standard of a student" << endl;
+       cout << "\tr: remove a student from the list" << endl;
+       cout << "\tp: print all students on the list" << endl;
+       cout << "\tq: quit and save list of students" << endl;
+       cin >> ch;
+       branching(ch);
+   } while (ch != 'q');
+   save("Students.txt");
+   remove_all();
+   list = NULL;
+   return 0;
+}
+
+//https://www.tutorialspoint.com/cplusplus/cpp_switch_statement.htm
+void branching(char c)
+{
+   switch (c) {
+   case 'a':
+   case 'c':
+   case 'r':
+   case 'p':
+       registration(c);
+       break;
+   case 'q': 
+       break;
+   default:
+       cout<<"\nInvalid input!\n\n";
+   }
+}
+// The registration function is used to determine how much data is needed and which function to send that data to.
+// It uses pointers and values that are returned from some functions to produce the correct output.
+// There is no implementation needed here, but you should study this function and know how it works.
+// It is always helpful to understand how the code works before implementing new features.
+// Do not change anything in this function or you risk failing the automated test cases.
+void registration(char c)
+{
+   string name, standard;
+   bool result;
+   int result_check = -1;
+   if (c == 'p')
+       print_all();
+   else
+   {
+       cout << endl << "Please enter the student's name: " << endl;
+       cin >> name;
+       cout << "Please enter the student's standard: " << endl;
+       cin >> standard;
+       while (!(result_check == 0 || result_check == 1))
+       {
+           cout << endl << "Please select one of the following: " << endl;
+           cout << "0. Pass " << endl;
+           cout << "1. Fail" << endl;
+           cin >> result_check;
+       }
+       result = (bool)result_check;
+       Student* student_result = search_student(name, standard, result);
+       if (c == 'a') // add student
+       {
+           if (student_result == NULL)
+           {
+               add_student(name, standard, result);
+               cout << endl << "Student added." << endl << endl;
+           }
+           else
+               cout << endl << "Student already on list." << endl << endl;
+       }
+       else if (c == 'c') // change student standard
+       {
+           if (student_result == NULL)
+           {
+               cout << endl << "Student not found." << endl << endl;
+               return;
+           }
+           cout << endl << "Please enter the new standard for this student: " << endl;
+           cin >> standard; 
+           changeStandard(student_result, standard);
+           cout << endl << "Student's standard changed." << endl << endl;
+       }
+       else if (c == 'r') // remove student
+       {
+           if (student_result == NULL)
+           {
+               cout << endl << "Student not found." << endl << endl;
+               return;
+           }
+           remove_student(name, standard, result);
+           cout << endl << "Student removed from the list." << endl << endl;
+       }
+   }
+}
+// Q2_1: Define Friend Function Change Standard
+// Define the function changeStandard that is declared within the Student.h file.
+// This function sets the standard value of the Student pointer to the value of the string parameter.
+void changeStandard(Student* student_result, string standard)
+{
+}
+// Q2_2: Add Student
+// This function will be used to add a new student to the tail of the global linked list.
+// You will need to use the result variable to determine which constructor to use.
+// Remember that search is called before this function, therefore, the new student is not on the list.
+void add_student(string name, string standard, bool result)
+{
+  
+}
+// No implementation needed here, however it may be helpful to review this function
+Student* search_student(string name, string standard, bool result)
+{
+   Contain* container_traverser = list;
+   while (container_traverser != NULL)
+   {
+       if (container_traverser->student->getName() == name
+           && container_traverser->student->getStandard() == standard
+           && container_traverser->student->getResult() == result)
+           return container_traverser->student;
+       container_traverser = container_traverser->next;
+   }
+   return NULL;
+}
+// No implementation needed here, however it may be helpful to review this function
+void remove_student(string name, string standard, bool result)
+{
+   Contain* to_be_removed;
+   if (list->student->getName() == name
+       && list->student->getStandard() == standard
+       && list->student->getResult() == result)
+   {
+       to_be_removed = list;
+       list = list->next;
+       delete to_be_removed->student;
+       delete to_be_removed;
+       return;
+   }
+   Contain* container_traverser = list->next;
+   Contain* container_follower = list;
+   while (container_traverser != NULL)
+   {
+       if (container_traverser->student->getName() == name
+           && container_traverser->student->getStandard() == standard
+           && container_traverser->student->getResult() == result)
+       {
+           to_be_removed = container_traverser;
+           container_traverser = container_traverser->next;
+           container_follower->next = container_traverser;
+           delete to_be_removed->student;
+           delete to_be_removed;
+           return;
+       }
+       container_follower = container_traverser;
+       container_traverser = container_traverser->next;
+   }
+}
+// No implementation needed here, however it may be helpful to review this function
+void remove_all()
+{
+   while (list != NULL)
+   {
+       Contain* temp = list;
+       list = list->next;
+       delete temp->student;
+       delete temp;
+   }
+}
+// This function uses the virtual display() method of the Dog and Cat classes to print all Pets in an oragnized format.
+void print_all()
+{
+   Contain *container_traverser = list;
+   if (list == NULL)
+       cout << endl << "List is empty!" << endl << endl;
+   while (container_traverser != NULL)
+   {
+       container_traverser->student->display();
+       container_traverser = container_traverser->next;
+   }
+}
+// Q2_3: Save 
+// Save the linked list of students to a file using ofstream.
+// You will need to come up with a way to store the amount of Contains in linked list.
+void save(string fileName)
+{
+  
+}
+// Q2_4: Load 
+// Load the linked list of students from a file using ifstream.
+// You will need to create the linked list in the same order that is was saved to a file.
+// You will need to create a new node for the linked list, then add it to the tail of the list.
+// You will use the 'result' variable read from the file to determine which constructor to use.
+void load(string fileName)
+{
+}
+------------------------------------------------------------------------------------------------------------------------------------------------------
+STUDENT.H
+#ifndef _STUDENT_H_
+#define _STUDENT_H_
+#include <string>
+using namespace std;
+
+class Student {
+private:
+   string name, standard; // private local variables
+   bool result;
+public:
+   Student(string student_name, string student_standard, bool student_result); // constructor
+   // accessor methods
+   string getName();
+   string getStandard();
+   bool getResult();
+   // Q2_5
+   // Declare a “friend function” named changeStandard which has 2 parameters and no return value.
+   // The first parameter is a pointer to a Student, and the second is a string.
+   // See the helper function in hw2_2.CPP for proper use of this function.
+   virtual void display(){ }
+};
+#endif // _STUDENT_H_
+------------------------------------------------------------------------------------------------------------------------------------------------------
+STUDENT.CPP
+#include "Student.h"
+Student:Student(string student_name, string student_standard, bool student_result) {
+   name = student_name;
+   standard = student_standard;
+   result = student_result;
+}
+string Student::getName() {
+   return name;
+}
+string Student::getStandard() {
+   return standard;
+}
+bool Student::getResult() {
+   return result;
+}
+------------------------------------------------------------------------------------------------------------------------------------------------------
+PASS.H
+// Q2_6: Create Pass Class
+// Part 1: Create a child class of the Student class named 'Pass'
+// Part2: Declare constructor which accepts the same 3 parameters as the parent class Student.
+// Pass the 3 parameters to the super constructor in the Student class.
+// Part 3: Re-declare the method display (virtual method found inside of parent class Student)
+------------------------------------------------------------------------------------------------------------------------------------------------------
+PASS.CPP
+// Q2_7: Define Display for Pass class
+// Define the method display that you declared within the Pass class in the header file
+// Information should be printed in the following format:
+// Name: <name>
+// Standard: <standard>
+// Result: pass
+// (See the print_all function in hw2_2.CPP  for proper use of this function.)
+------------------------------------------------------------------------------------------------------------------------------------------------------
+FAIL.H
+// Q2_8: Create Fail Class
+// See the add function in hw2_2.CPP  for proper use of this function.
+// Part2: Declare constructor which accepts the same 3 parameters as the parent class Student.
+// Pass the 3 parameters to the super constructor in the Student class.
+// Part 3: Re-declare the method display (virtual method found inside of parent class Student)
+------------------------------------------------------------------------------------------------------------------------------------------------------
+FAIL.CPP
+// Q2_9: Define Display for Fail class
+// Define the method display that you declared within the Fail class in the header file
+// Information should be printed in the following format:
+// Name: <name>
+// Standard: <standard>
+// Result: fail
+// (See the print_all function in hw2_2.CPP  for proper use of this function.)
+------------------------------------------------------------------------------------------------------------------------------------------------------
+CONTAINER.H
+#ifndef _CONTAINER_H_
+#define _CONTAINER_H_
+#include "Student.h"
+class Contain {
+public:
+   Student *student;
+   Contain *next;
+   Contain(); // constructor
+};
+#endif // _CONTAINER_H_
+------------------------------------------------------------------------------------------------------------------------------------------------------
+CONTAINER.CPP
+#include "Contain.h"
+// Constructor for Contain class
+Contain::Contain(){
+   student = NULL;
+   next = NULL;
+}
